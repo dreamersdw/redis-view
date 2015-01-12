@@ -17,7 +17,7 @@ import (
 const (
 	version = "0.1"
 	usage   = `Usage:
-	redis-view [--url=URL] [--nowrap] [PATTERN...]
+	redis-view [--url=URL] [--sep=SEP] [--nowrap] [PATTERN...]
 	redis-view --version
 	redis-view --help
 
@@ -30,6 +30,7 @@ var (
 	wrap        bool
 	redisURL    = "redis://127.0.0.1:6379"
 	patterns    = []string{"*"}
+	keySep      = ":"
 )
 
 type treeNode struct {
@@ -61,10 +62,10 @@ func getConn() *redis.Client {
 	return redisClient
 }
 
-func populate(tree *treeNode, keys []string) {
+func populate(tree *treeNode, keys []string, sep string) {
 	for _, key := range keys {
 		var node = *tree
-		for _, part := range strings.Split(key, ":") {
+		for _, part := range strings.Split(key, sep) {
 			_, ok := node.children[part]
 			if !ok {
 				node.children[part] = treeNode{
@@ -227,6 +228,10 @@ func main() {
 
 	wrap = !opt["--nowrap"].(bool)
 
+	if opt["--sep"] != nil {
+		keySep = opt["--sep"].(string)
+	}
+
 	if opt["--url"] != nil {
 		redisURL = opt["--url"].(string)
 	}
@@ -243,7 +248,7 @@ func main() {
 		if err != nil {
 			continue
 		}
-		populate(tree, keys)
+		populate(tree, keys, keySep)
 	}
 
 	plot(*tree, "", "", false)
