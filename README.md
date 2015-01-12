@@ -11,7 +11,7 @@ go install github.com/dreamersdw/redis-view
 ## Usage
 ```
 Usage:
-	redis-view [--url=URL] [--sep=SEP] [--nowrap] [PATTERN...]
+	redis-view [--url=URL] [--sep=SEP] [--only-keys] [--nowrap] [PATTERN...]
 	redis-view --version
 	redis-view --help
 

@@ -17,7 +17,7 @@ import (
 const (
 	version = "0.1"
 	usage   = `Usage:
-	redis-view [--url=URL] [--sep=SEP] [--nowrap] [PATTERN...]
+	redis-view [--url=URL] [--sep=SEP] [--only-keys] [--nowrap] [PATTERN...]
 	redis-view --version
 	redis-view --help
 
@@ -31,6 +31,7 @@ var (
 	redisURL    = "redis://127.0.0.1:6379"
 	patterns    = []string{"*"}
 	keySep      = ":"
+	onlyKeys    = false
 )
 
 type treeNode struct {
@@ -91,6 +92,10 @@ func query(key string) (rtype string, ttl int64, val interface{}) {
 
 	rtype, _ = r.Cmd("type", key).Str()
 	ttl, _ = r.Cmd("ttl", key).Int64()
+	if onlyKeys {
+		val = ""
+		return
+	}
 	switch rtype {
 	case "string":
 		val, _ = r.Cmd("get", key).Str()
@@ -227,6 +232,8 @@ func main() {
 	}
 
 	wrap = !opt["--nowrap"].(bool)
+
+	onlyKeys = opt["--only-keys"].(bool)
 
 	if opt["--sep"] != nil {
 		keySep = opt["--sep"].(string)
