@@ -12,6 +12,7 @@ import (
 	"github.com/docopt/docopt-go"
 	"github.com/fzzy/radix/redis"
 	"github.com/mgutz/ansi"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -28,6 +29,7 @@ Example:
 var (
 	redisClient *redis.Client
 	wrap        bool
+	turnOnColor bool
 	redisURL    = "redis://127.0.0.1:6379"
 	patterns    = []string{"*"}
 	keySep      = ":"
@@ -169,6 +171,13 @@ func prettyPrint(val interface{}, prefix string, wrap bool) string {
 	return string(result)
 }
 
+func colorize(s string, style string) string {
+	if turnOnColor {
+		return ansi.Color(s, style)
+	}
+	return s
+}
+
 func plotNode(node treeNode, key string, leading string, isLast bool) {
 	var sep = ""
 	if isLast {
@@ -181,15 +190,15 @@ func plotNode(node treeNode, key string, leading string, isLast bool) {
 	if len(node.children) == 0 {
 		rtype, ttl, val := query(key)
 		if ttl == -1 {
-			extra = fmt.Sprintf("%s %s %s", "#", ansi.Color(rtype, "yellow"),
+			extra = fmt.Sprintf("%s %s %s", "#", colorize(rtype, "yellow"),
 				prettyPrint(val, leading, wrap))
 		} else {
-			extra = fmt.Sprintf("%s %s %s %s", "#", ansi.Color(rtype, "yellow"),
+			extra = fmt.Sprintf("%s %s %s %s", "#", colorize(rtype, "yellow"),
 				ansi.Color(strconv.Itoa(int(ttl)), "red"), prettyPrint(val, leading, wrap))
 		}
 	}
 
-	nodeVal := ansi.Color(node.value, "blue")
+	nodeVal := colorize(node.value, "blue")
 
 	fmt.Printf("%s%s%s %s\n", leading, sep, nodeVal, extra)
 }
@@ -234,6 +243,8 @@ func main() {
 	wrap = !opt["--nowrap"].(bool)
 
 	onlyKeys = opt["--only-keys"].(bool)
+
+	turnOnColor = terminal.IsTerminal(int(os.Stdout.Fd()))
 
 	if opt["--sep"] != nil {
 		keySep = opt["--sep"].(string)
