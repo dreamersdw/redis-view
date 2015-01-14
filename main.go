@@ -147,20 +147,24 @@ func bitset(bytes []byte) []byte {
 	return seq
 }
 
-func prettyPrint(val interface{}, prefix string, wrap bool) string {
+func prettyPrint(val interface{}, prefix string, wrap bool, isLast bool) string {
 	var result []byte
+	var newPrefix = prefix
+	if !isLast {
+		newPrefix = prefix + "|"
+	}
 	switch val.(type) {
 	case map[string]string:
 		if !wrap || len(val.(map[string]string)) <= 1 {
 			result, _ = json.Marshal(val)
 		} else {
-			result, _ = json.MarshalIndent(val, prefix, "  ")
+			result, _ = json.MarshalIndent(val, newPrefix, "   ")
 		}
 	case []string:
 		if !wrap || len(val.([]string)) <= 1 {
 			result, _ = json.Marshal(val)
 		} else {
-			result, _ = json.MarshalIndent(val, prefix, "  ")
+			result, _ = json.MarshalIndent(val, newPrefix, "   ")
 		}
 	case string:
 		result = []byte(val.(string))
@@ -189,13 +193,16 @@ func plotNode(node treeNode, key string, leading string, isLast bool) {
 	var extra = ""
 	if len(node.children) == 0 {
 		rtype, ttl, val := query(key)
-		if ttl == -1 {
-			extra = fmt.Sprintf("%s %s %s", "#", colorize(rtype, "yellow"),
-				prettyPrint(val, leading, wrap))
-		} else {
-			extra = fmt.Sprintf("%s %s %s %s", "#", colorize(rtype, "yellow"),
-				ansi.Color(strconv.Itoa(int(ttl)), "red"), prettyPrint(val, leading, wrap))
+
+		var sttl = ""
+		if ttl != -1 {
+			sttl = strconv.Itoa(int(ttl))
 		}
+
+		extra = fmt.Sprintf("%s %s %s %s", "#",
+			colorize(rtype, "yellow"),
+			colorize(sttl, "red"),
+			prettyPrint(val, leading, wrap, isLast))
 	}
 
 	nodeVal := colorize(node.value, "blue")
