@@ -94,10 +94,12 @@ func query(key string) (rtype string, ttl int64, val interface{}) {
 
 	rtype, _ = r.Cmd("type", key).Str()
 	ttl, _ = r.Cmd("ttl", key).Int64()
+
 	if onlyKeys {
 		val = ""
 		return
 	}
+
 	switch rtype {
 	case "string":
 		val, _ = r.Cmd("get", key).Str()
@@ -183,14 +185,14 @@ func colorize(s string, style string) string {
 }
 
 func plotNode(node treeNode, key string, leading string, isLast bool) {
-	var sep = ""
+	var sep string
 	if isLast {
 		sep = "└── "
 	} else {
 		sep = "├── "
 	}
 
-	var extra = ""
+	var extra string
 	if len(node.children) == 0 {
 		rtype, ttl, val := query(key)
 
@@ -210,7 +212,7 @@ func plotNode(node treeNode, key string, leading string, isLast bool) {
 	fmt.Printf("%s%s%s %s\n", leading, sep, nodeVal, extra)
 }
 
-func plot(node treeNode, key string, leading string, isLast bool) {
+func plot(node treeNode, key string, leading string) {
 	parts := mapKeys(node.children)
 	for index, part := range parts {
 		var newKey = ""
@@ -227,7 +229,7 @@ func plot(node treeNode, key string, leading string, isLast bool) {
 		} else {
 			newLeading = leading + "│   "
 		}
-		plot(node.children[part], newKey, newLeading, isLast)
+		plot(node.children[part], newKey, newLeading)
 	}
 }
 
@@ -276,5 +278,5 @@ func main() {
 		populate(tree, keys, keySep)
 	}
 
-	plot(*tree, "", "", false)
+	plot(*tree, "", "")
 }
