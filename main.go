@@ -110,7 +110,7 @@ func query(key string) (rtype string, ttl int64, val interface{}) {
 	case "hash":
 		val, _ = r.Cmd("hgetall", key).Hash()
 	case "zset":
-		val, _ = r.Cmd("zrange", key, 0, -1, "WITHSCORES").Hash()
+		val, _ = r.Cmd("zrangebyscore", key, "-inf", "+inf", "WITHSCORES").List()
 	}
 	return
 }
