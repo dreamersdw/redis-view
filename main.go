@@ -60,6 +60,15 @@ func getConn() *redis.Client {
 			os.Exit(1)
 		}
 
+		if URL.Path != "" {
+			dbNum, err := strconv.ParseInt(URL.Path[1:], 10, 32)
+			if err != nil {
+				fmt.Printf("invalid database number %s\n", URL.Path)
+				os.Exit(1)
+			}
+			client.Cmd("select", dbNum)
+		}
+
 		redisClient = client
 	}
 	return redisClient
