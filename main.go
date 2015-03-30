@@ -120,6 +120,8 @@ func query(key string) (rtype string, ttl int64, val interface{}) {
 		val, _ = r.Cmd("hgetall", key).Hash()
 	case "zset":
 		val, _ = r.Cmd("zrangebyscore", key, "-inf", "+inf", "WITHSCORES").List()
+	default:
+		panic(fmt.Sprintf("unknow type %s for key %s", rtype, key))
 	}
 	return
 }
