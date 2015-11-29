@@ -4,8 +4,7 @@
 
 ## Installation
 ```bash
-go get github.com/dreamersdw/redis-view
-go install github.com/dreamersdw/redis-view
+go get -u github.com/dreamersdw/redis-view
 ```
 
 ## Usage
